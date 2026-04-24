@@ -1,0 +1,36 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Mode A: From 01-platform remote state
+# ═══════════════════════════════════════════════════════════════════════════════
+# use_remote_state           = true
+# state_storage_account_name = "<your-storage-account>"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Mode B: Existing platform (no remote state)
+# ═══════════════════════════════════════════════════════════════════════════════
+# use_remote_state    = false
+# tenant_id           = "..."
+# subscription_id     = "..."
+# gateway_app_id      = "..."
+# obo_client_app_id   = "..."
+# mcp_access_scope_id = "..."
+# apim_gateway_url    = "https://my-apim.azure-api.net"
+# project             = "myproject"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Client config (required in both modes)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# PKCE example:
+# client_type   = "pkce"
+# client_name   = "my-web-app"
+# client_app_id = "00000000-0000-0000-0000-000000000000"
+
+# CC example:
+# client_type         = "cc"
+# client_name         = "data-pipeline"
+# client_display_name = "Data Pipeline Service"
+
+# Existing CC example:
+# client_type   = "existing_cc"
+# client_name   = "legacy-service"
+# client_app_id = "00000000-0000-0000-0000-000000000000"

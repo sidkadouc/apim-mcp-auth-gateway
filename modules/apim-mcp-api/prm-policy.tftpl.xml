@@ -1,0 +1,35 @@
+<!--
+  PRM (RFC 9728) discovery endpoint – anonymous, returns protected resource metadata.
+-->
+<policies>
+  <inbound>
+    <base />
+    <return-response>
+      <set-status code="200" reason="OK" />
+      <set-header name="Content-Type" exists-action="override">
+        <value>application/json</value>
+      </set-header>
+      <set-header name="Cache-Control" exists-action="override">
+        <value>public, max-age=3600</value>
+      </set-header>
+      <set-body>@{
+        var prm = new JObject
+        {
+          ["resource"] = "https://${apim_name}.azure-api.net/mcp/${mcp_server_name}",
+          ["authorization_servers"] = new JArray
+          {
+            $"https://login.microsoftonline.com/${tenant_id}/v2.0"
+          },
+          ["scopes_supported"] = new JArray { "api://${obo_client_id}/Mcp.Access" },
+          ["bearer_methods_supported"] = new JArray { "header" },
+          ["resource_documentation"] = $"https://{context.Request.OriginalUrl.Host}/docs",
+          ["mcp_protocol_version"] = "2025-11-25"
+        };
+        return prm.ToString();
+      }</set-body>
+    </return-response>
+  </inbound>
+  <backend><base /></backend>
+  <outbound><base /></outbound>
+  <on-error><base /></on-error>
+</policies>

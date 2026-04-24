@@ -1,0 +1,8 @@
+{
+    "servers": {
+        "mcp-demo": {
+            "type": "http",
+            "url": "https://<your-apim-name>.azure-api.net/mcp/mcp-demo"
+        }
+    }
+}

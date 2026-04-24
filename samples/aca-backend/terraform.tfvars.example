@@ -1,0 +1,9 @@
+# Sample ACA backend deployment
+# Copy to terraform.tfvars
+
+# state_storage_account_name = "<your-storage-account>"
+
+# Container images (after building and pushing)
+# mcp_sample_image = "myregistry.azurecr.io/sample-mcp-server:latest"
+# rest_sample_image = "myregistry.azurecr.io/sample-rest-api:latest"
+# acr_login_server = "myregistry.azurecr.io"

@@ -1,0 +1,19 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Mode A: Read from 01-platform remote state (default)
+# ═══════════════════════════════════════════════════════════════════════════════
+# use_remote_state           = true
+# state_storage_account_name = "<your-storage-account>"
+# platform_state_key         = "01-platform.tfstate"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Mode B: Existing APIM (no remote state needed)
+# ═══════════════════════════════════════════════════════════════════════════════
+# use_remote_state               = false
+# subscription_id                = "00000000-0000-0000-0000-000000000000"
+# tenant_id                      = "00000000-0000-0000-0000-000000000000"
+# resource_group_name            = "rg-my-existing-apim"
+# apim_id                        = "/subscriptions/.../resourceGroups/.../providers/Microsoft.ApiManagement/service/my-apim"
+# apim_name                      = "my-apim"
+# obo_client_app_id              = "00000000-0000-0000-0000-000000000000"
+# keyvault_obo_client_id_uri     = "https://my-kv.vault.azure.net/secrets/obo-client-id"
+# keyvault_obo_client_secret_uri = "https://my-kv.vault.azure.net/secrets/obo-client-secret"

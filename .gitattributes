@@ -1,0 +1,19 @@
+# Normalize line endings
+* text=auto
+
+# XML and policy files: keep LF
+*.xml text eol=lf
+*.tftpl.xml text eol=lf
+
+# PowerShell scripts: keep CRLF on Windows
+*.ps1 text eol=crlf
+
+# Terraform: LF
+*.tf text eol=lf
+*.tfvars text eol=lf
+*.tfvars.example text eol=lf
+.terraform.lock.hcl text eol=lf
+
+# Binaries
+*.png binary
+*.drawio binary

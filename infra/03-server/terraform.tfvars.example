@@ -1,0 +1,32 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Mode A: From 01-platform remote state
+# ═══════════════════════════════════════════════════════════════════════════════
+# use_remote_state           = true
+# state_storage_account_name = "<your-storage-account>"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Mode B: Existing APIM (no remote state)
+# ═══════════════════════════════════════════════════════════════════════════════
+# use_remote_state       = false
+# subscription_id        = "..."
+# tenant_id              = "..."
+# resource_group_name    = "rg-my-apim"
+# apim_id                = "/subscriptions/.../providers/Microsoft.ApiManagement/service/my-apim"
+# apim_name              = "my-apim"
+# apim_gateway_url       = "https://my-apim.azure-api.net"
+# apim_product_id        = "mcp"
+# gateway_identifier_uri = "api://..."
+# backend_app_id         = "..."
+# backend_identifier_uri = "api://..."
+# obo_client_app_id      = "..."
+
+# MCP server config (required in both modes)
+# The server must already be deployed and accessible at backend_url.
+name         = "my-server"
+display_name = "My MCP Server"
+backend_url  = "https://my-server.azurecontainerapps.io/mcp"
+auth_mode    = "obo"
+expose_prm   = true
+
+# Optional: restrict to specific Entra groups
+# allowed_groups = ["aabbccdd-1111-2222-3333-444455556666"]

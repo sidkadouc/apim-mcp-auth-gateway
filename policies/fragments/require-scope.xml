@@ -1,0 +1,21 @@
+<fragment>
+  <choose>
+    <when condition="@{
+      var jwt = (Jwt)context.Variables["jwt"];
+      var requiredScope = (string)context.Variables["required-scope"];
+      if (!jwt.Claims.ContainsKey("scp")) { return true; }
+      return !jwt.Claims["scp"].Any(s => s.Contains(requiredScope));
+    }">
+      <return-response>
+        <set-status code="403" reason="Forbidden" />
+        <set-header name="WWW-Authenticate" exists-action="override">
+          <value>@($"Bearer error=\"insufficient_scope\", scope=\"{(string)context.Variables["required-scope"]}\", resource_metadata=\"https://{context.Request.OriginalUrl.Host}/.well-known/oauth-protected-resource/{(string)context.Variables["mcp-server-name"]}\"")</value>
+        </set-header>
+        <set-header name="Content-Type" exists-action="override">
+          <value>application/json</value>
+        </set-header>
+        <set-body>@(new JObject(new JProperty("error", "insufficient_scope"), new JProperty("error_description", "Required scope: " + (string)context.Variables["required-scope"])).ToString())</set-body>
+      </return-response>
+    </when>
+  </choose>
+</fragment>

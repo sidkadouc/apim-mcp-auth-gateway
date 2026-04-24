@@ -1,0 +1,23 @@
+<fragment>
+  <cors allow-credentials="false">
+    <allowed-origins>
+      <origin>*</origin>
+    </allowed-origins>
+    <allowed-methods preflight-result-max-age="300">
+      <method>GET</method>
+      <method>POST</method>
+      <method>DELETE</method>
+      <method>OPTIONS</method>
+    </allowed-methods>
+    <allowed-headers>
+      <header>Authorization</header>
+      <header>Content-Type</header>
+      <header>Accept</header>
+      <header>Mcp-Session-Id</header>
+    </allowed-headers>
+    <expose-headers>
+      <header>Mcp-Session-Id</header>
+      <header>WWW-Authenticate</header>
+    </expose-headers>
+  </cors>
+</fragment>

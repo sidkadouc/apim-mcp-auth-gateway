@@ -1,0 +1,18 @@
+<!--
+  Product-level policy for MCP product.
+  Rate-limit and quota per user/app.
+-->
+<policies>
+  <inbound>
+    <base />
+  </inbound>
+  <backend>
+    <base />
+  </backend>
+  <outbound>
+    <base />
+  </outbound>
+  <on-error>
+    <base />
+  </on-error>
+</policies>

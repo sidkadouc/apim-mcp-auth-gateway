@@ -1,0 +1,19 @@
+<fragment>
+  <choose>
+    <when condition="@{
+      var jwt = (Jwt)context.Variables["jwt"];
+      var requiredRole = (string)context.Variables["required-role"];
+      if (!jwt.Claims.ContainsKey("roles")) { return true; }
+      var roles = jwt.Claims["roles"];
+      return !roles.Contains(requiredRole);
+    }">
+      <return-response>
+        <set-status code="403" reason="Forbidden" />
+        <set-header name="Content-Type" exists-action="override">
+          <value>application/json</value>
+        </set-header>
+        <set-body>@(new JObject(new JProperty("error", "insufficient_role"), new JProperty("error_description", "Required role: " + (string)context.Variables["required-role"])).ToString())</set-body>
+      </return-response>
+    </when>
+  </choose>
+</fragment>

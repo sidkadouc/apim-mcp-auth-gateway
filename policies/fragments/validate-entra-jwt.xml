@@ -1,0 +1,59 @@
+<!--
+  Fragment: validate-entra-jwt
+  Validates the inbound Entra ID v2.0 JWT Bearer token.
+
+  Named values used:
+    {{tenant-id}}        - Entra tenant ID
+    {{gateway-audience}} - Audience for app-only (CC) tokens: the gateway app client ID
+    {{user-audience}}    - Audience for user (PKCE) tokens: the OBO client app client ID
+                           (VS Code requests tokens scoped to this app)
+
+  Accepted audiences:
+    Tokens arriving at APIM can have two different audiences depending on the flow:
+    - Client Credentials: aud = gateway app (service apps request api://<gateway>/.default)
+    - Auth Code + PKCE:   aud = OBO client app (interactive apps request api://<obo-client>/Mcp.Access)
+    Both bare GUID and api:// prefixed forms are accepted.
+
+  Outputs (context variables):
+    jwt                  - The parsed JWT token object
+    auth-principal-type  - "user" (has scp claim) or "app" (has roles claim)
+    auth-oid             - User object ID (or empty for app-only)
+    auth-client-id       - Client / app ID
+-->
+<fragment>
+  <validate-jwt header-name="Authorization"
+                failed-validation-httpcode="401"
+                failed-validation-error-message="Invalid or missing Bearer token"
+                require-scheme="Bearer"
+                output-token-variable-name="jwt">
+    <openid-config url="https://login.microsoftonline.com/{{tenant-id}}/v2.0/.well-known/openid-configuration" />
+    <audiences>
+      <audience>{{gateway-audience}}</audience>
+      <audience>api://{{gateway-audience}}</audience>
+      <audience>{{user-audience}}</audience>
+      <audience>api://{{user-audience}}</audience>
+    </audiences>
+    <issuers>
+      <issuer>https://login.microsoftonline.com/{{tenant-id}}/v2.0</issuer>
+      <issuer>https://sts.windows.net/{{tenant-id}}/</issuer>
+    </issuers>
+  </validate-jwt>
+
+  <!-- Determine principal type: user (delegated) vs app (client credentials) -->
+  <set-variable name="auth-principal-type" value="@{
+    var jwt = (Jwt)context.Variables["jwt"];
+    return jwt.Claims.ContainsKey("scp") ? "user" : "app";
+  }" />
+
+  <!-- Extract user OID (empty string for app-only tokens) -->
+  <set-variable name="auth-oid" value="@{
+    var jwt = (Jwt)context.Variables["jwt"];
+    return jwt.Claims.GetValueOrDefault("oid", "");
+  }" />
+
+  <!-- Extract client/app ID -->
+  <set-variable name="auth-client-id" value="@{
+    var jwt = (Jwt)context.Variables["jwt"];
+    return jwt.Claims.GetValueOrDefault("azp", jwt.Claims.GetValueOrDefault("appid", ""));
+  }" />
+</fragment>

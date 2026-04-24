@@ -1,0 +1,12 @@
+<!--
+  Fragment: attach-backend-bearer
+  Sets the Authorization header on the backend request with the acquired token.
+
+  Input (context variable):
+    backend-token - Access token for the backend
+-->
+<fragment>
+  <set-header name="Authorization" exists-action="override">
+    <value>@($"Bearer {(string)context.Variables["backend-token"]}")</value>
+  </set-header>
+</fragment>

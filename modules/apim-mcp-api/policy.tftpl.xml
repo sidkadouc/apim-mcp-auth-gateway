@@ -1,0 +1,57 @@
+<!--
+  Composed MCP API policy – parameterized via templatefile().
+-->
+<policies>
+  <inbound>
+    <base />
+    <set-variable name="required-scope"    value="${required_scope}" />
+    <set-variable name="required-role"     value="${required_role}" />
+    <set-variable name="backend-audience"  value="${backend_audience}" />
+    <set-variable name="backend-auth-mode" value="${auth_mode}" />
+    <set-variable name="mcp-server-name"   value="${mcp_server_name}" />
+    <set-variable name="allowed-groups"    value="${allowed_groups}" />
+    <include-fragment fragment-id="validate-entra-jwt" />
+    <choose>
+      <when condition="@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;auth-principal-type&quot;) == &quot;user&quot;)">
+        <include-fragment fragment-id="require-scope" />
+        <include-fragment fragment-id="require-group" />
+      </when>
+      <otherwise>
+        <include-fragment fragment-id="require-app-role" />
+      </otherwise>
+    </choose>
+    <include-fragment fragment-id="rate-limit-by-user" />
+    <choose>
+      <when condition="@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;backend-auth-mode&quot;) == &quot;obo&quot; &amp;&amp; context.Variables.GetValueOrDefault&lt;string&gt;(&quot;auth-principal-type&quot;) == &quot;user&quot;)">
+        <include-fragment fragment-id="obo-exchange" />
+        <include-fragment fragment-id="attach-backend-bearer" />
+      </when>
+      <when condition="@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;backend-auth-mode&quot;) == &quot;client_credentials&quot; || (context.Variables.GetValueOrDefault&lt;string&gt;(&quot;backend-auth-mode&quot;) == &quot;obo&quot; &amp;&amp; context.Variables.GetValueOrDefault&lt;string&gt;(&quot;auth-principal-type&quot;) == &quot;app&quot;))">
+        <include-fragment fragment-id="client-credentials-exchange" />
+        <include-fragment fragment-id="attach-backend-bearer" />
+      </when>
+      <when condition="@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;backend-auth-mode&quot;) == &quot;apikey&quot;)">
+        <include-fragment fragment-id="attach-backend-apikey" />
+      </when>
+      <when condition="@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;backend-auth-mode&quot;) == &quot;cert&quot;)">
+        <include-fragment fragment-id="attach-backend-cert" />
+      </when>
+    </choose>
+  </inbound>
+  <backend>
+    <forward-request timeout="120" buffer-response="false" />
+  </backend>
+  <outbound>
+    <base />
+  </outbound>
+  <on-error>
+    <base />
+    <choose>
+      <when condition="@(context.Response.StatusCode == 401)">
+        <set-header name="WWW-Authenticate" exists-action="override">
+          <value>@($"Bearer realm=\"mcp\", resource_metadata=\"https://{context.Request.OriginalUrl.Host}/.well-known/oauth-protected-resource/${mcp_server_name}\", scope=\"${required_scope}\"")</value>
+        </set-header>
+      </when>
+    </choose>
+  </on-error>
+</policies>

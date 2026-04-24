@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars
+
+tenant_id            = "00000000-0000-0000-0000-000000000000"
+subscription_id      = "00000000-0000-0000-0000-000000000000"
+apim_publisher_email = "ai-platform@contoso.com"
+project              = "myproject-aigw"
+environment          = "dev"

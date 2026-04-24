@@ -1,0 +1,20 @@
+<!--
+  Fragment: rate-limit-by-user
+  Rate-limits requests per user (oid) or per app (azp) for CC flows.
+
+  Input (context variable):
+    jwt       - Validated JWT
+    auth-oid  - User OID (or empty for app)
+    auth-client-id - Client ID
+
+  Configuration: 60 calls / 60 seconds per identity.
+-->
+<fragment>
+  <rate-limit-by-key calls="60"
+                     renewal-period="60"
+                     counter-key="@{
+    var oid = (string)context.Variables["auth-oid"];
+    var clientId = (string)context.Variables["auth-client-id"];
+    return !string.IsNullOrEmpty(oid) ? oid : clientId;
+  }" />
+</fragment>

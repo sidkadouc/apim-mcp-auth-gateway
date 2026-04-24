@@ -1,0 +1,3 @@
+<fragment>
+  <set-header name="Authorization" exists-action="delete" />
+</fragment>

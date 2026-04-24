@@ -1,0 +1,47 @@
+<!--
+  Fragment: mcp-usage-log
+  Parses JSON-RPC request to extract MCP method/tool, then logs to App Insights.
+
+  Input (context variables):
+    jwt, auth-oid, auth-client-id, auth-principal-type, mcp-server-name,
+    cache-hit-obo, correlation-id
+
+  Emits App Insights custom dimensions on every request.
+-->
+<fragment>
+  <!-- Try to parse MCP method from JSON-RPC body (POST only) -->
+  <set-variable name="mcp-method" value="@{
+    try {
+      if (context.Request.Method == "POST" &amp;&amp; context.Request.Body != null) {
+        var body = context.Request.Body.As&lt;JObject&gt;(preserveContent: true);
+        return body?["method"]?.ToString() ?? "unknown";
+      }
+      return context.Request.Method == "GET" ? "sse/connect" : "unknown";
+    } catch { return "parse_error"; }
+  }" />
+
+  <set-variable name="mcp-tool-name" value="@{
+    try {
+      if (context.Request.Method == "POST" &amp;&amp; context.Request.Body != null) {
+        var body = context.Request.Body.As&lt;JObject&gt;(preserveContent: true);
+        if (body?["method"]?.ToString() == "tools/call") {
+          return body?["params"]?["name"]?.ToString() ?? "";
+        }
+      }
+      return "";
+    } catch { return ""; }
+  }" />
+
+  <!-- Emit trace to App Insights with custom dimensions -->
+  <trace source="mcp-usage" severity="information">
+    <message>MCP request</message>
+    <metadata name="user_oid" value="@((string)context.Variables.GetValueOrDefault<string>("auth-oid", ""))" />
+    <metadata name="client_id" value="@((string)context.Variables.GetValueOrDefault<string>("auth-client-id", ""))" />
+    <metadata name="principal_type" value="@((string)context.Variables.GetValueOrDefault<string>("auth-principal-type", ""))" />
+    <metadata name="mcp_server" value="@((string)context.Variables.GetValueOrDefault<string>("mcp-server-name", ""))" />
+    <metadata name="mcp_method" value="@((string)context.Variables.GetValueOrDefault<string>("mcp-method", ""))" />
+    <metadata name="mcp_tool_name" value="@((string)context.Variables.GetValueOrDefault<string>("mcp-tool-name", ""))" />
+    <metadata name="cache_hit_obo" value="@((string)context.Variables.GetValueOrDefault<string>("cache-hit-obo", "n/a"))" />
+    <metadata name="correlation_id" value="@((string)context.Variables.GetValueOrDefault<string>("correlation-id", ""))" />
+  </trace>
+</fragment>

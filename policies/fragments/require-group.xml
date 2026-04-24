@@ -1,0 +1,41 @@
+<!--
+  Fragment: require-group
+  Checks that the authenticated user belongs to at least one of the allowed
+  Entra ID security groups. Skipped when allowed-groups is empty.
+
+  Reads:
+    jwt              - Parsed JWT from validate-entra-jwt
+    allowed-groups   - Comma-separated list of allowed group object IDs (may be empty)
+
+  Behavior:
+    - If allowed-groups is empty or blank, the check is skipped (open access).
+    - If the token has no "groups" claim, returns 403.
+    - If none of the token groups match allowed-groups, returns 403.
+
+  Note: The Entra app registration must have "groups" claim configured
+  (Token configuration > Add groups claim > Security groups > Group ID).
+-->
+<fragment>
+  <choose>
+    <when condition="@{
+      var allowed = (string)context.Variables.GetValueOrDefault<string>("allowed-groups", "");
+      if (string.IsNullOrWhiteSpace(allowed)) { return false; }
+      var jwt = (Jwt)context.Variables["jwt"];
+      if (!jwt.Claims.ContainsKey("groups")) { return true; }
+      var tokenGroups = jwt.Claims["groups"];
+      var allowedList = allowed.Split(',').Select(g => g.Trim()).Where(g => g.Length > 0);
+      return !allowedList.Any(a => tokenGroups.Contains(a));
+    }">
+      <return-response>
+        <set-status code="403" reason="Forbidden" />
+        <set-header name="Content-Type" exists-action="override">
+          <value>application/json</value>
+        </set-header>
+        <set-body>@(new JObject(
+          new JProperty("error", "insufficient_group"),
+          new JProperty("error_description", "User is not a member of any allowed group for this MCP server.")
+        ).ToString())</set-body>
+      </return-response>
+    </when>
+  </choose>
+</fragment>

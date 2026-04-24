@@ -1,0 +1,10 @@
+<!--
+  Fragment: correlation-id
+  Ensures every request carries x-correlation-id for distributed tracing.
+-->
+<fragment>
+  <set-header name="x-correlation-id" exists-action="skip">
+    <value>@(context.RequestId.ToString())</value>
+  </set-header>
+  <set-variable name="correlation-id" value="@(context.Request.Headers.GetValueOrDefault("x-correlation-id", context.RequestId.ToString()))" />
+</fragment>

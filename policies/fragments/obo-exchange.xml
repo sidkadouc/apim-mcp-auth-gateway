@@ -1,0 +1,43 @@
+<fragment>
+  <set-variable name="obo-cache-key" value="@($"obo:{(string)context.Variables["auth-oid"]}:{(string)context.Variables["backend-audience"]}")" />
+  <set-variable name="nv-tenant-id" value="{{tenant-id}}" />
+  <set-variable name="nv-obo-client-id" value="{{obo-client-id}}" />
+  <set-variable name="nv-obo-client-secret" value="{{obo-client-secret}}" />
+  <cache-lookup-value key="@((string)context.Variables["obo-cache-key"])" variable-name="backend-token" />
+  <choose>
+    <when condition="@(!context.Variables.ContainsKey("backend-token"))">
+      <set-variable name="cache-hit-obo" value="false" />
+      <send-request mode="new" response-variable-name="obo-response" timeout="10" ignore-error="false">
+        <set-url>@($"https://login.microsoftonline.com/{(string)context.Variables["nv-tenant-id"]}/oauth2/v2.0/token")</set-url>
+        <set-method>POST</set-method>
+        <set-header name="Content-Type" exists-action="override"><value>application/x-www-form-urlencoded</value></set-header>
+        <set-body>@{
+          var rawToken = context.Request.Headers.GetValueOrDefault("Authorization", "").Replace("Bearer ", "");
+          var ba = (string)context.Variables["backend-audience"];
+          var ci = (string)context.Variables["nv-obo-client-id"];
+          var cs = (string)context.Variables["nv-obo-client-secret"];
+          return "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&client_id=" + Uri.EscapeDataString(ci) + "&client_secret=" + Uri.EscapeDataString(cs) + "&assertion=" + Uri.EscapeDataString(rawToken) + "&scope=" + Uri.EscapeDataString(ba + "/.default") + "&requested_token_use=on_behalf_of";
+        }</set-body>
+      </send-request>
+      <choose>
+        <when condition="@(((IResponse)context.Variables["obo-response"]).StatusCode == 200)">
+          <set-variable name="obo-body" value="@(((IResponse)context.Variables["obo-response"]).Body.As<JObject>())" />
+          <set-variable name="backend-token" value="@(((JObject)context.Variables["obo-body"])["access_token"].ToString())" />
+          <cache-store-value key="@((string)context.Variables["obo-cache-key"])" value="@((string)context.Variables["backend-token"])" duration="3540" />
+        </when>
+        <otherwise>
+          <return-response>
+            <set-status code="502" reason="Bad Gateway" />
+            <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+            <set-body>@{
+              return new JObject(new JProperty("error","obo_exchange_failed"),new JProperty("error_description","Token exchange to downstream service failed. Check APIM logs for details.")).ToString();
+            }</set-body>
+          </return-response>
+        </otherwise>
+      </choose>
+    </when>
+    <otherwise>
+      <set-variable name="cache-hit-obo" value="true" />
+    </otherwise>
+  </choose>
+</fragment>
