@@ -280,7 +280,6 @@ terraform apply
 
 **Two auth flows** -- Interactive users (VS Code, web apps) use Auth Code + PKCE. Services and agents use Client Credentials. APIM detects the flow from the token claims and routes accordingly.
 
-For auth flow diagrams, see [docs/auth-flows.md](docs/auth-flows.md). For Entra app registration details, see [docs/app-registrations.md](docs/app-registrations.md).
 
 ## Contributing
 
